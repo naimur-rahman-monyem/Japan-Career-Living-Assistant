@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  name         String
+  passwordHash String
+  role         String           @default("USER")
+  profile      UserProfile?
+  savedJobs    SavedJob[]
+  applications JobApplication[]
+  createdAt    DateTime         @default(now())
+  UserSkill    UserSkill[]
+}
+
+model UserProfile {
+  id              String         @id @default(cuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetCity      String         @default("Tokyo")
+  japaneseLevelId String?
+  experienceYears Int            @default(2)
+  budget          Int            @default(180000)
+  visaGoal        String         @default("Engineer/Specialist in Humanities")
+  bio             String?
+  JapaneseLevel   JapaneseLevel? @relation(fields: [japaneseLevelId], references: [id])
+}
+
+model Skill {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  category   String
+  userSkills UserSkill[]
+  jobs       Job[]
+}
+
+model UserSkill {
+  userId  String
+  skillId String
+  level   String @default("Intermediate")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([userId, skillId])
+}
+
+model JapaneseLevel {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  label       String
+  description String
+  profiles    UserProfile[]
+}
+
+model JobCategory {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+  jobs Job[]
+}
+
+model Location {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  prefecture   String
+  description  String
+  jobs         Job[]
+  costOfLiving CostOfLiving?
+}
+
+model Company {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String
+  website     String?
+  industry    String
+  logoUrl     String?
+  jobs        Job[]
+}
+
+model Job {
+  id             String           @id @default(cuid())
+  title          String
+  slug           String           @unique
+  description    String
+  employmentType String
+  minSalary      Int
+  maxSalary      Int
+  visaSupport    Boolean          @default(false)
+  remote         Boolean          @default(false)
+  companyId      String
+  locationId     String
+  categoryId     String
+  company        Company          @relation(fields: [companyId], references: [id])
+  location       Location         @relation(fields: [locationId], references: [id])
+  category       JobCategory      @relation(fields: [categoryId], references: [id])
+  skills         Skill[]
+  savedBy        SavedJob[]
+  applications   JobApplication[]
+  createdAt      DateTime         @default(now())
+}
+
+model SavedJob {
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@id([userId, jobId])
+}
+
+model SalaryData {
+  id              String @id @default(cuid())
+  role            String
+  location        String
+  experienceLevel String
+  minSalary       Int
+  medianSalary    Int
+  maxSalary       Int
+  currency        String @default("JPY")
+}
+
+model VisaInformation {
+  id              String  @id @default(cuid())
+  name            String
+  slug            String  @unique
+  summary         String
+  requirements    String
+  typicalDuration String
+  officialUrl     String?
+}
+
+model CostOfLiving {
+  id                String   @id @default(cuid())
+  locationId        String   @unique
+  monthlyRent       Int
+  monthlyEssentials Int
+  transport         Int
+  location          Location @relation(fields: [locationId], references: [id])
+}
+
+model JobApplication {
+  id        String    @id @default(cuid())
+  userId    String
+  jobId     String
+  status    String    @default("SAVED")
+  notes     String?
+  appliedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+}
+
+model Resource {
+  id       String  @id @default(cuid())
+  title    String
+  category String
+  summary  String
+  url      String
+  featured Boolean @default(false)
+}

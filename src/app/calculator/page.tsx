@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function Calculator(){return <main className="container py-16"><h1 className="text-4xl font-bold">Plan your move</h1><p className="mt-4 max-w-xl text-lg text-slate-600">Estimate your monthly runway, arrival fund and potential savings before you choose a city.</p><Link className="btn btn-primary mt-8" href="/calculators">Open cost calculator →</Link></main>}

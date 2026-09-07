@@ -1,0 +1,1 @@
+export default function Terms(){return <main className="container max-w-3xl py-16"><h1 className="text-4xl font-bold">Terms</h1><p className="mt-6 leading-8 text-slate-600">Japan Path is a planning aid, not legal, immigration, tax or financial advice. Verify visa, employment and housing information with official sources and qualified professionals.</p></main>}

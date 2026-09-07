@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server"; import { z } from "zod"; import { db } from "@/lib/db"; import { currentUserId } from "@/lib/auth";
+export const dynamic="force-dynamic";
+const body=z.object({jobId:z.string()});
+export async function GET(){const userId=currentUserId();if(!userId)return NextResponse.json({error:"Unauthorized"},{status:401});return NextResponse.json(await db.savedJob.findMany({where:{userId},include:{job:{include:{company:true,location:true}}},orderBy:{createdAt:"desc"}}))}
+export async function POST(req:Request){const userId=currentUserId();if(!userId)return NextResponse.json({error:"Unauthorized"},{status:401});const parsed=body.safeParse(await req.json());if(!parsed.success)return NextResponse.json({error:"Invalid jobId"},{status:400});const saved=await db.savedJob.upsert({where:{userId_jobId:{userId,jobId:parsed.data.jobId}},update:{},create:{userId,jobId:parsed.data.jobId}});return NextResponse.json(saved,{status:201})}
+export async function DELETE(req:Request){const userId=currentUserId();if(!userId)return NextResponse.json({error:"Unauthorized"},{status:401});const parsed=body.safeParse(await req.json());if(!parsed.success)return NextResponse.json({error:"Invalid jobId"},{status:400});await db.savedJob.delete({where:{userId_jobId:{userId,jobId:parsed.data.jobId}}});return NextResponse.json({ok:true})}
