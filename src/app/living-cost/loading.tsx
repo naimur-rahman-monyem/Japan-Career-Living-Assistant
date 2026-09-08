@@ -1,0 +1,3 @@
+export default function Loading() {
+  return <main className="container py-16"><p className="text-sm font-semibold text-ocean">LOADING CITY DATA...</p><div className="mt-4 h-10 w-2/3 animate-pulse rounded-lg bg-slate-200"/><div className="mt-10 grid gap-5 md:grid-cols-3"><div className="h-32 animate-pulse rounded-2xl bg-slate-200"/><div className="h-32 animate-pulse rounded-2xl bg-slate-200"/><div className="h-32 animate-pulse rounded-2xl bg-slate-200"/></div></main>;
+}
