@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("postgresql://neondb_owner:npg_dVPiM5Q3Atuj@ep-blue-dew-acamz6zq-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
 }
 
 model User {
@@ -13,17 +13,16 @@ model User {
   name         String
   passwordHash String
   role         String           @default("USER")
-  profile      UserProfile?
-  savedJobs    SavedJob[]
-  applications JobApplication[]
   createdAt    DateTime         @default(now())
+  applications JobApplication[]
+  savedJobs    SavedJob[]
+  profile      UserProfile?
   UserSkill    UserSkill[]
 }
 
 model UserProfile {
   id              String         @id @default(cuid())
   userId          String         @unique
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   targetCity      String         @default("Tokyo")
   japaneseLevelId String?
   experienceYears Int            @default(2)
@@ -31,6 +30,7 @@ model UserProfile {
   visaGoal        String         @default("Engineer/Specialist in Humanities")
   bio             String?
   JapaneseLevel   JapaneseLevel? @relation(fields: [japaneseLevelId], references: [id])
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Skill {
@@ -38,15 +38,15 @@ model Skill {
   name       String      @unique
   category   String
   userSkills UserSkill[]
-  jobs       Job[]
+  jobs       Job[]       @relation("JobToSkill")
 }
 
 model UserSkill {
   userId  String
   skillId String
   level   String @default("Intermediate")
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, skillId])
 }
@@ -72,8 +72,8 @@ model Location {
   slug         String        @unique
   prefecture   String
   description  String
-  jobs         Job[]
   costOfLiving CostOfLiving?
+  jobs         Job[]
 }
 
 model Company {
@@ -100,21 +100,21 @@ model Job {
   companyId      String
   locationId     String
   categoryId     String
+  createdAt      DateTime         @default(now())
+  category       JobCategory      @relation(fields: [categoryId], references: [id])
   company        Company          @relation(fields: [companyId], references: [id])
   location       Location         @relation(fields: [locationId], references: [id])
-  category       JobCategory      @relation(fields: [categoryId], references: [id])
-  skills         Skill[]
-  savedBy        SavedJob[]
   applications   JobApplication[]
-  createdAt      DateTime         @default(now())
+  savedBy        SavedJob[]
+  skills         Skill[]          @relation("JobToSkill")
 }
 
 model SavedJob {
   userId    String
   jobId     String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, jobId])
 }
@@ -156,9 +156,9 @@ model JobApplication {
   status    String    @default("SAVED")
   notes     String?
   appliedAt DateTime?
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Resource {
@@ -171,13 +171,13 @@ model Resource {
 }
 
 model LivingCostCity {
-  id          String            @id @default(cuid())
-  city        String            @unique
-  country     String            @default("Japan")
-  currency    String            @default("JPY")
+  id          String           @id @default(cuid())
+  city        String           @unique
+  country     String           @default("Japan")
+  currency    String           @default("JPY")
   source      String
   collectedAt DateTime?
-  updatedAt   DateTime          @updatedAt
+  updatedAt   DateTime         @updatedAt
   items       LivingCostItem[]
 }
 
