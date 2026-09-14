@@ -29,3 +29,20 @@ Seeded jobs and fictional employers are clearly demo data. No external job APIs 
 ## Validation
 
 Run `npm run type-check`, `npm test`, and `npm run build` before deployment. See the documentation in `docs/`.
+### Prisma Database Migration Instructions
+
+Whenever you change `prisma/schema.prisma`, follow these steps.
+
+1. Update the Prisma schema locally.
+2. Run `npx prisma migrate dev` locally.
+3. Check that the migration works correctly.
+4. Commit the migration files to Git.
+5. Push the changes to GitHub.
+6. Deploy the updated project through Vercel.
+7. Run `npx prisma migrate deploy` for the Neon database.
+8. Make sure the Neon database uses the latest schema.
+
+For production deployments, always apply migrations safely.
+
+Never use `prisma migrate reset` on the production database.
+
